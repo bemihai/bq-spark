@@ -1,0 +1,14 @@
+[project]
+name = "bq-spark-bm"
+version = "0.1.0"
+description = "BigQuery Spark benchmark"
+readme = "README.md"
+authors = [
+    { name = "bemihai", email = "mihaita.berbec@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

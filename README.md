@@ -168,7 +168,7 @@ python ./src/bq_native.py --dataset_id $DATASET_ID
 ### Case 3: BigQuery
 
 
-References:
+## References:
 - [BigQuery vs Spark Comparison](https://medium.com/qodea/bigquery-spark-or-dataflow-a-story-of-speed-and-other-comparisons-fb1b8fea3619)
 - [PySpark on Dataproc Serverless](https://medium.com/qodea/running-pyspark-jobs-on-google-cloud-using-serverless-dataproc-f16cef5ec6b9)
 - [Hadoop GCS Connector in PySpark](https://kontext.tech/article/689/pyspark-read-file-in-google-cloud-storage)

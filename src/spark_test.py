@@ -1,8 +1,8 @@
 
 from pyspark.sql.functions import to_date, to_timestamp
 
-from src.utils import get_project_root, get_spark_session
-
+from src.utils import get_project_root
+from src.utils.spark import get_spark_session
 
 if __name__ == "__main__":
 

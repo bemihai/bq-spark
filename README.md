@@ -76,9 +76,9 @@ gsutil -m cp -r gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB gs://$BUCKET
 ```bash
 DATASET_ID=<your-dataset-id>
 bq mk -d --data_location=$GCP_REGION $DATASET_ID
-bq load --source_format PARQUET $DATASET_ID.store_sales gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/store_sales/part*.snappy.parquet
-bq load --source_format PARQUET $DATASET_ID.date_dim gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/date_dim/part*.snappy.parquet
-bq load --source_format PARQUET $DATASET_ID.item gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/item/part*.snappy.parquet
+bq load --source_format PARQUET $DATASET_ID.store_sales "gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/store_sales/part*.snappy.parquet"
+bq load --source_format PARQUET $DATASET_ID.date_dim "gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/date_dim/part*.snappy.parquet""
+bq load --source_format PARQUET $DATASET_ID.item "gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/item/part*.snappy.parquet"
 ```
 
 The smallest dataset is enough to test the code locally, but you can copy the other datasets as well to have 

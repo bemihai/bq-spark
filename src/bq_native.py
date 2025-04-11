@@ -30,7 +30,7 @@ def main(args=None):
     client = bq.Client(project=GCP_PROJECT_ID)
     write_disposition = "WRITE_TRUNCATE" if args.bq_write_mode == "overwrite" else "WRITE_APPEND"
     job_config = bq.QueryJobConfig(
-        labels=args.bq_job_labels,
+        labels=args.bq_job_labels or {},
         write_disposition=write_disposition,
         destination=f"{GCP_PROJECT_ID}.{args.dataset_id}.query3_result",
     )

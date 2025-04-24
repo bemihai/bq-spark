@@ -10,7 +10,6 @@ SHELL := /bin/bash
 # default goal
 .DEFAULT_GOAL := help
 
-.EXPORT_ALL_VARIABLES: run-bq
 .PHONY: help setup clean build run-gcs run-bq run-bq-native
 
 help:

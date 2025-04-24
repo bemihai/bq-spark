@@ -3,6 +3,7 @@ include .env
 
 APP_NAME ?= $$(cat pyproject.toml| grep name | cut -d" " -f3 | sed  's/"//g')
 VERSION ?= 0.1.0
+DATASET_ID ?= tpcds_1GB
 
 # default shell
 SHELL := /bin/bash
@@ -10,27 +11,26 @@ SHELL := /bin/bash
 # default goal
 .DEFAULT_GOAL := help
 
-.PHONY: help setup clean build run-gcs run-bq run-bq-native
+.PHONY: help gcp-setup gcp-clean build run-gcs run-bq run-bq-native
 
 help:
-	@echo "Available commands:"
+	@echo "Available commands: TODO"
 
-setup:
+gcp-setup:
 	@echo "Setup GCP resources and data"
-	@bq mk -d --data_location=europe-west1 tpcds_1GB
-	@bq load --source_format PARQUET tpcds_1GB.store_sales gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/store_sales/part*.snappy.parquet
-	@bq load --source_format PARQUET tpcds_1GB.date_dim gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/date_dim/part*.snappy.parquet
-	@bq load --source_format PARQUET tpcds_1GB.item gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/item/part*.snappy.parquet
+	@gcloud auth application-default login
+	@gcloud storage buckets create gs://${BUCKET_NAME} --location=${GCP_REGION}
+	@gsutil -m cp -r gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB gs://${BUCKET_NAME}/tpcds/1GB
+	@bq mk -d --data_location=${GCP_REGION} ${DATASET_ID}
+	@bq load --source_format PARQUET ${DATASET_ID}.store_sales gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/store_sales/part*.snappy.parquet
+	@bq load --source_format PARQUET ${DATASET_ID}.date_dim gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/date_dim/part*.snappy.parquet
+	@bq load --source_format PARQUET ${DATASET_ID}.item gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/item/part*.snappy.parquet
 
-clean:
-	@rm -Rf ./dist
-	@rm -Rf ./build_dir
-	@rm -f requirements.txt
-
-build: clean
-	@echo "Package code and dependencies for ${APP_NAME}-${VERSION}"
-	@mkdir -p ./build_dir
-	@uv sync
+build:
+	@echo "Package code and dependencies"
+	@rm -Rf ./dist & rm -Rf ./build_dir & rm -f requirements.txt
+	@mkdir ./build_dir
+	@uv sync --no-dev
 	@uv export -q --format requirements-txt --no-dev --no-hashes --no-header --output-file requirements.txt
 	@uv build
 	@uv pip install -r requirements.txt --target ./build_dir
@@ -62,6 +62,10 @@ run-bq-native:
 	--properties spark.executor.instances=2,spark.driver.cores=4,spark.executor.cores=4,spark.app.name=${APP_NAME} \
 	--network ${GCP_NETWORK} --service-account=${GCP_SERVICE_ACCOUNT} -- \
 	--gcp_project_id ${GCP_PROJECT_ID} --dataset_id tpcds_1GB
+
+gcp-clean:
+	@echo "Clean up GCP data"
+
 
 
 

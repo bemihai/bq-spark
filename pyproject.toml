@@ -24,7 +24,3 @@ dev = [
     "pyspark>=3.5.5",
     "google-cloud-bigquery>=3.31.0",
 ]
-exclude = [
-    "scripts",
-    "README.md",
-]

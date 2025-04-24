@@ -9,7 +9,7 @@ from pyspark.sql import SparkSession
 from .io import get_project_root
 
 load_dotenv()
-GCP_SERVICE_ACCOUNT = os.getenv("GCP_SERVICE_ACCOUNT_KEY")
+GCP_SERVICE_ACCOUNT_KEY = os.getenv("GCP_SERVICE_ACCOUNT_KEY")
 
 
 def get_spark_app_config(env: str) -> SparkConf:
@@ -34,9 +34,10 @@ def get_spark_session(
     Returns the Spark Session object for the current environment.
 
     Args:
-        app_name (str): The name of the Spark application.
-        gcs_temp_bucket (str): The GCS bucket to use for temporary files.
-        bq_job_labels (dict): Labels to apply to BigQuery jobs (load or query).
+        env: The environment to use.
+        app_name: The name of the Spark application.
+        gcs_temp_bucket: The GCS bucket to use for temporary files.
+        bq_job_labels: Labels to apply to BigQuery jobs (load or query).
     """
     builder = SparkSession.builder if app_name is None else SparkSession.builder.appName(app_name)
     conf = get_spark_app_config(env)
@@ -51,10 +52,10 @@ def get_spark_session(
     # setup GCS credentials for Makefile-bigquery connector and hadoop-gcs connector
     # this is not needed when running on Dataproc
     if env == "local":
-        spark.conf.set("credentialsFile", str(get_project_root() / GCP_SERVICE_ACCOUNT))
+        spark.conf.set("credentialsFile", str(get_project_root() / GCP_SERVICE_ACCOUNT_KEY))
         spark._jsc.hadoopConfiguration().set(
             "google.cloud.auth.service.account.json.keyfile",
-            str(get_project_root() / GCP_SERVICE_ACCOUNT)
+            str(get_project_root() / GCP_SERVICE_ACCOUNT_KEY)
         )
 
     return spark

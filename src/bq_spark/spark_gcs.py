@@ -3,13 +3,13 @@ import argparse
 
 from pyspark.sql.functions import desc
 
-from src.utils.io import read_parquet
-from src.utils.spark import get_spark_session
+from bq_spark.utils.io import read_parquet
+from bq_spark.utils.spark import get_spark_session
 
 
 def main(args=None):
     """Main function to run the query."""
-    spark = get_spark_session(app_name=args.app_name)
+    spark = get_spark_session(env=args.env, app_name=args.app_name)
 
     sales = read_parquet(spark, f"{args.data_bucket}/store_sales/")
     dt = read_parquet(spark,f"{args.data_bucket}/date_dim/")
@@ -35,6 +35,7 @@ def main(args=None):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("--env", type=str, help="Environment to run the query.", default="local")
     parser.add_argument("--app_name", type=str, help="App name for Spark session.")
     parser.add_argument("--data_bucket", type=str, help="GCS bucket containing the tpcds input files.")
     args = parser.parse_args()

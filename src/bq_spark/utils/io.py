@@ -7,7 +7,7 @@ from pyspark.sql import SparkSession, DataFrame
 
 def get_project_root() -> Path:
     """Returns the root directory of the project."""
-    return Path(os.path.dirname(__file__)).parent.parent
+    return Path(os.path.dirname(__file__)).parent.parent.parent
 
 
 def read_parquet(spark: SparkSession, path: Path | str, header: bool = True) -> DataFrame:

@@ -1,8 +1,7 @@
-
 from pyspark.sql.functions import to_date, to_timestamp
 
-from src.utils import get_project_root
-from src.utils.spark import get_spark_session
+from bq_spark.utils import get_project_root
+from bq_spark.utils.spark import get_spark_session
 
 if __name__ == "__main__":
 
@@ -17,7 +16,7 @@ if __name__ == "__main__":
         .load(str(get_project_root() / "data/sf_fire.csv"))
     )
 
-    # spark dataframes are immutable: each transformation returns a new dataframe
+    # Makefile dataframes are immutable: each transformation returns a new dataframe
     # rename columns (drop spaces from names)
     new_col_names = list(map(lambda x: x.replace(" ", ""), fire_df.columns))
     fire_df = fire_df.toDF(*new_col_names)

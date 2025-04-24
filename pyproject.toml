@@ -1,15 +1,13 @@
 [project]
-name = "bq-spark-bm"
+name = "bq-spark"
 version = "0.1.0"
 description = "BigQuery Spark benchmark"
 readme = "README.md"
 authors = [
     { name = "bemihai", email = "mihaita.berbec@gmail.com" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 dependencies = [
-    "google-cloud-bigquery>=3.31.0",
-    "pyspark>=3.5.5",
     "python-dotenv==1.1.0",
 ]
 
@@ -18,7 +16,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src"]
+packages = ["src/bq_spark"]
+
+[dependency-groups]
+dev = [
+    "pylint>=3.3.6",
+    "pyspark>=3.5.5",
+    "google-cloud-bigquery>=3.31.0",
+]
 exclude = [
     "scripts",
     "README.md",

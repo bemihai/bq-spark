@@ -161,6 +161,10 @@ python ./src/bq_native.py --dataset_id $DATASET_ID
 
 ## Run the queries in GCP
 
+Pre-requisites:
+- Cloud Dataproc API enabled
+- Subnet has Private Google Access enabled: configuration https://cloud.google.com/vpc/docs/configure-private-google-access#config-pga
+
 ### Case 1: Spark on Dataproc + GCS
 
 ### Case 2: Spark on Dataproc + BigQuery

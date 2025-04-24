@@ -7,3 +7,5 @@ data/
 .env
 secrets/
 dist/
+temp/
+build_dir/

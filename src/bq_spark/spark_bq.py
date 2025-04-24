@@ -3,27 +3,24 @@ import argparse
 import os
 import json
 
-from dotenv import load_dotenv
 from pyspark.sql.functions import desc
 
-from src.utils.io import read_bq_table, write_bq_table
-from src.utils.spark import get_spark_session
-
-load_dotenv()
-GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
+from bq_spark.utils.io import read_bq_table, write_bq_table
+from bq_spark.utils.spark import get_spark_session
 
 
 def main(args=None):
     """Main function to run the query."""
     spark = get_spark_session(
+        env=args.env,
         app_name=args.app_name,
         gcs_temp_bucket=args.gcs_temp_bucket,
         bq_job_labels=args.bq_job_labels,
     )
 
-    sales = read_bq_table(spark, f"{GCP_PROJECT_ID}.{args.dataset_id}.store_sales")
-    dt = read_bq_table(spark, f"{GCP_PROJECT_ID}.{args.dataset_id}.date_dim")
-    item = read_bq_table(spark, f"{GCP_PROJECT_ID}.{args.dataset_id}.item")
+    sales = read_bq_table(spark, f"{args.gcp_project_id}.{args.dataset_id}.store_sales")
+    dt = read_bq_table(spark, f"{args.gcp_project_id}.{args.dataset_id}.date_dim")
+    item = read_bq_table(spark, f"{args.gcp_project_id}.{args.dataset_id}.item")
 
     result = (
         sales
@@ -40,7 +37,7 @@ def main(args=None):
 
     write_bq_table(
         df=result,
-        table_ref=f"{GCP_PROJECT_ID}.{args.dataset_id}.query3_result",
+        table_ref=f"{args.gcp_project_id}.{args.dataset_id}.query3_result",
         mode=args.bq_write_mode,
         method=args.bq_write_method,
     )
@@ -50,6 +47,8 @@ def main(args=None):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("--env", type=str, help="Environment to run the query.", default="local")
+    parser.add_argument("--gcp_project_id", type=str, help="GCP project ID.", default=os.getenv("GCP_PROJECT_ID"))
     parser.add_argument("--app_name", type=str, help="App name for Spark session.")
     parser.add_argument("--dataset_id", type=str,
                         help="BigQuery dataset containing the tpcds input tables.")

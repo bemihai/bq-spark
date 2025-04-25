@@ -1,7 +1,6 @@
 """Query 3 - run query using the BigQuery client."""
 import argparse
 import os
-import json
 
 from google.cloud import bigquery as bq
 
@@ -24,7 +23,7 @@ def main(args=None):
     client = bq.Client(project=args.gcp_project_id)
     write_disposition = "WRITE_TRUNCATE" if args.bq_write_mode == "overwrite" else "WRITE_APPEND"
     job_config = bq.QueryJobConfig(
-        labels=args.bq_job_labels or {},
+        labels={"usecase": f"q3_bq_native_{args.dataset_id}".lower()},
         write_disposition=write_disposition,
         destination=f"{args.gcp_project_id}.{args.dataset_id}.query3_result",
     )
@@ -37,7 +36,6 @@ if __name__ == "__main__":
     parser.add_argument("--gcp_project_id", type=str, help="GCP project ID.", default=os.getenv("GCP_PROJECT_ID"))
     parser.add_argument("--dataset_id", type=str,
                         help="BigQuery dataset containing the tpcds input tables.")
-    parser.add_argument("--bq_job_labels", type=json.loads, required=False, help="BigQuery job labels.")
     parser.add_argument("--bq_write_mode", type=str, required=False,
                         help="Overwrite or append.", default="overwrite")
     args = parser.parse_args()

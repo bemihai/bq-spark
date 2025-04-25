@@ -3,7 +3,8 @@ include .env
 
 APP_NAME ?= $$(cat pyproject.toml| grep name | cut -d" " -f3 | sed  's/"//g')
 VERSION ?= 0.1.0
-DATASET_ID ?= tpcds_1GB
+DATASET_ID ?= tpcds_1gb
+DATASET_PATH ?= tpcds_1gb
 
 # default shell
 SHELL := /bin/bash
@@ -46,22 +47,24 @@ run-bq:
 	@gcloud dataproc batches submit --project ${GCP_PROJECT_ID} --region ${GCP_REGION} pyspark gs://${BUCKET_NAME}/code/spark_bq.py \
 	--py-files gs://${BUCKET_NAME}/code/${APP_NAME}-${VERSION}.zip --version 2.2 \
 	--properties spark.executor.instances=2,spark.driver.cores=4,spark.executor.cores=4,spark.app.name=${APP_NAME} \
+	--labels usecase=q3_spark_bq_${DATASET_ID} \
 	--network ${GCP_NETWORK} --service-account=${GCP_SERVICE_ACCOUNT} -- \
-	--env cloud --gcp_project_id ${GCP_PROJECT_ID} --app_name ${APP_NAME} --dataset_id tpcds_1GB --bq_write_method direct
+	--env cloud --gcp_project_id ${GCP_PROJECT_ID} --app_name ${APP_NAME} --dataset_id ${DATASET_ID} --bq_write_method direct
 
 run-gcs:
 	@gcloud dataproc batches submit --project ${GCP_PROJECT_ID} --region ${GCP_REGION} pyspark gs://${BUCKET_NAME}/code/spark_gcs.py \
 	--py-files gs://${BUCKET_NAME}/code/${APP_NAME}-${VERSION}.zip --version 2.2 \
 	--properties spark.executor.instances=2,spark.driver.cores=4,spark.executor.cores=4,spark.app.name=${APP_NAME} \
+	--labels usecase=q3_spark_gcs_${DATASET_PATH} \
 	--network ${GCP_NETWORK} --service-account=${GCP_SERVICE_ACCOUNT} -- \
-	--env cloud --app_name ${APP_NAME} --data_bucket gs://${BUCKET_NAME}/tpcds/1GB
+	--env cloud --app_name ${APP_NAME} --data_bucket gs://${BUCKET_NAME}/${DATASET_PATH}
 
 run-bq-native:
 	@gcloud dataproc batches submit --project ${GCP_PROJECT_ID} --region ${GCP_REGION} pyspark gs://${BUCKET_NAME}/code/bq_native.py \
 	--py-files gs://${BUCKET_NAME}/code/${APP_NAME}-${VERSION}.zip --version 2.2 \
 	--properties spark.executor.instances=2,spark.driver.cores=4,spark.executor.cores=4,spark.app.name=${APP_NAME} \
 	--network ${GCP_NETWORK} --service-account=${GCP_SERVICE_ACCOUNT} -- \
-	--gcp_project_id ${GCP_PROJECT_ID} --dataset_id tpcds_1GB
+	--gcp_project_id ${GCP_PROJECT_ID} --dataset_id ${DATASET_ID}
 
 gcp-clean:
 	@echo "Clean up GCP data"

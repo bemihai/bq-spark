@@ -15,7 +15,7 @@ def main(args=None):
         env=args.env,
         app_name=args.app_name,
         gcs_temp_bucket=args.gcs_temp_bucket,
-        bq_job_labels=args.bq_job_labels,
+        bq_job_labels={"usecase": f"q3_spark_bq_{args.dataset_id}".lower()},
     )
 
     sales = read_bq_table(spark, f"{args.gcp_project_id}.{args.dataset_id}.store_sales")
@@ -54,7 +54,6 @@ if __name__ == "__main__":
                         help="BigQuery dataset containing the tpcds input tables.")
     parser.add_argument("--gcs_temp_bucket", type=str, required=False,
                         help="GCS bucket for temporary files.")
-    parser.add_argument("--bq_job_labels", type=json.loads, required=False, help="BigQuery job labels.")
     parser.add_argument("--bq_write_mode", type=str, required=False,
                         help="Overwrite or append.", default="overwrite")
     parser.add_argument("--bq_write_method", type=str, required=False,

@@ -1,7 +1,6 @@
 """Query 3 - read data from BigQuery and write to BigQuery using Spark."""
 import argparse
 import os
-import json
 
 from pyspark.sql.functions import desc
 

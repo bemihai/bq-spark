@@ -128,7 +128,7 @@ You can test the queries locally before submitting them to Dataproc as Spark job
 To run the query locally using Spark and read/write data from/to GCS, you can use the following command:
 ```bash
 APP_NAME=<spark-app-name>
-python ./src/bq_spark/spark_gcs.py --app_name ${APP_NAME} --data_bucket gs://${BUCKET_NAME}/${DATSASET_ID} 
+python ./src/bq_spark/spark_gcs.py --app_name ${APP_NAME} --data_bucket gs://${BUCKET_NAME}/${DATSASET_PATH} 
 ```
 The resulting parquet file is saved at `gs://${BUCKET_NAME}/${DATASET_ID}/query3_result/`.
 
@@ -155,7 +155,7 @@ python ./src/bq_spark/spark_bq.py --gcp_project_id ${GCP_PROJECT_ID} --app_name 
 
 We can also run this script entirely locally by setting up first the [BigQuery emulator](https://github.com/goccy/bigquery-emulator).  
 
-### Case 3: BigQuery 
+### Case 3: BigQuery native
 
 To run the query using BigQuery (cloud or emulator), you can use the following command:
 ```bash
@@ -177,11 +177,50 @@ In case you get networking/firewall errors when submitting batch jobs to Datapro
 ingress/egress firewall rules to the service account, 
 see [this](https://cloud.google.com/dataproc-serverless/docs/concepts/network) for more detail. 
 
+### Package code and upload to GCS
+
+To run python scripts on Dataproc, we need to package the code and its dependencies and upload them to GCS. We bundled 
+all the necessary steps in `make build`:
+- sync project dependencies, excluding dev-only packages (e.g. there is no need to package `pyspark` or `bigquery` 
+  as they are already available on Dataproc default image),
+- export dependencies to a `requirements.txt` file,
+- build the project's wheel and unzip it to a temporary build folder, 
+- install `requirements.txt` in the build folder,
+- zip the temporary build folder (containing the project code and dependencies) as `${APP_NAME}-${VERSION}.zip` 
+  and upload it to GCS,
+- upload all python main files to the same bucket in GCS (Dataproc requires the executable scripts 
+  to be outside the zip file). 
+
 ### Case 1: Spark on Dataproc + GCS
+
+To run the query with Spark on data stored in GCS, run the following command (available as `make run-gcs`):
+```bash
+gcloud dataproc batches submit --project ${GCP_PROJECT_ID} --region ${GCP_REGION} pyspark gs://${BUCKET_NAME}/code/spark_gcs.py \
+	--py-files gs://${BUCKET_NAME}/code/${APP_NAME}-${VERSION}.zip --version 2.2 \
+	--properties spark.executor.instances=2,spark.driver.cores=4,spark.executor.cores=4,spark.app.name=${APP_NAME} \
+	--labels usecase=q3_spark_gcs_${DATASET_PATH} \
+	--network ${GCP_NETWORK} --service-account=${GCP_SERVICE_ACCOUNT} -- \
+	--env cloud --app_name ${APP_NAME} --data_bucket gs://${BUCKET_NAME}/${DATASET_PATH}
+```
 
 ### Case 2: Spark on Dataproc + BigQuery
 
+To run the query with Spark on data stored in BigQuery, run the following command (available as `make run-bq`):
+```bash
+gcloud dataproc batches submit --project ${GCP_PROJECT_ID} --region ${GCP_REGION} pyspark gs://${BUCKET_NAME}/code/spark_bq.py \
+	--py-files gs://${BUCKET_NAME}/code/${APP_NAME}-${VERSION}.zip --version 2.2 \
+	--properties spark.executor.instances=2,spark.driver.cores=4,spark.executor.cores=4,spark.app.name=${APP_NAME} \
+	--labels usecase=q3_spark_bq_${DATASET_ID} \
+	--network ${GCP_NETWORK} --service-account=${GCP_SERVICE_ACCOUNT} -- \
+	--env cloud --gcp_project_id ${GCP_PROJECT_ID} --app_name ${APP_NAME} --dataset_id ${DATASET_ID} --bq_write_method direct
+```
+
 ### Case 3: BigQuery native
+
+To run the query using BigQuery, use the following command:
+```bash
+python ./src/bq_native.py --gcp_project_id ${GCP_PROJECT_ID} --dataset_id ${DATASET_ID}  
+```
 
 
 ## References:

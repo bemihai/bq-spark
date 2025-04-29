@@ -10,11 +10,14 @@ from bq_spark.utils.spark import get_spark_session
 
 def main(args=None):
     """Main function to run the query."""
+    bq_label = f"p2804_q3_spark_bq_{args.dataset_id}"
+    if args.bq_write_method == "indirect":
+        bq_label += "_indirect"
     spark = get_spark_session(
         env=args.env,
         app_name=args.app_name,
         gcs_temp_bucket=args.gcs_temp_bucket,
-        bq_job_labels={"usecase": f"q3_spark_bq_{args.dataset_id}".lower()},
+        bq_job_labels={"usecase": bq_label},
     )
 
     sales = read_bq_table(spark, f"{args.gcp_project_id}.{args.dataset_id}.store_sales")
@@ -41,6 +44,7 @@ def main(args=None):
         method=args.bq_write_method,
     )
     spark.stop()
+    print(f"BQ label: {bq_label}")
 
 
 if __name__ == "__main__":

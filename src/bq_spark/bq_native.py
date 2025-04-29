@@ -7,6 +7,7 @@ from google.cloud import bigquery as bq
 
 def main(args=None):
     """Main function to run the query."""
+    query_label = f"p2804_q3_bq_native_{args.dataset_id}"
     query = f"""
         SELECT dt.d_year, item.i_brand_id brand_id, item.i_brand brand,SUM(ss_ext_sales_price) sum_agg
         FROM  {args.gcp_project_id}.{args.dataset_id}.date_dim dt, 
@@ -23,11 +24,12 @@ def main(args=None):
     client = bq.Client(project=args.gcp_project_id)
     write_disposition = "WRITE_TRUNCATE" if args.bq_write_mode == "overwrite" else "WRITE_APPEND"
     job_config = bq.QueryJobConfig(
-        labels={"usecase": f"q3_bq_native_{args.dataset_id}".lower()},
+        labels={"usecase": query_label},
         write_disposition=write_disposition,
         destination=f"{args.gcp_project_id}.{args.dataset_id}.query3_result",
     )
     client.query(query, job_config=job_config)
+    print(f"Label: {query_label}")
 
 
 if __name__ == "__main__":

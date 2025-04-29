@@ -12,7 +12,7 @@ SHELL := /bin/bash
 # default goal
 .DEFAULT_GOAL := help
 
-.PHONY: help gcp-setup gcp-clean build run-gcs run-bq run-bq-native
+.PHONY: help gcp-setup gcp-clean build run-gcs run-bq run-bq-native run-bq-ind
 
 help:
 	@echo "Available commands: TODO"
@@ -47,15 +47,23 @@ run-bq:
 	@gcloud dataproc batches submit --project ${GCP_PROJECT_ID} --region ${GCP_REGION} pyspark gs://${BUCKET_NAME}/code/spark_bq.py \
 	--py-files gs://${BUCKET_NAME}/code/${APP_NAME}-${VERSION}.zip --version 2.2 \
 	--properties spark.executor.instances=2,spark.driver.cores=4,spark.executor.cores=4,spark.app.name=${APP_NAME} \
-	--labels usecase=q3_spark_bq_${DATASET_ID} \
+	--labels usecase=p2804_q3_spark_bq_${DATASET_ID} --async \
 	--network ${GCP_NETWORK} --service-account=${GCP_SERVICE_ACCOUNT} -- \
 	--env cloud --gcp_project_id ${GCP_PROJECT_ID} --app_name ${APP_NAME} --dataset_id ${DATASET_ID} --bq_write_method direct
+
+run-bq-ind:
+	@gcloud dataproc batches submit --project ${GCP_PROJECT_ID} --region ${GCP_REGION} pyspark gs://${BUCKET_NAME}/code/spark_bq.py \
+	--py-files gs://${BUCKET_NAME}/code/${APP_NAME}-${VERSION}.zip --version 2.2 \
+	--properties spark.executor.instances=2,spark.driver.cores=4,spark.executor.cores=4,spark.app.name=${APP_NAME} \
+	--labels usecase=p2804_q3_spark_bq_gcs_${DATASET_ID} --async \
+	--network ${GCP_NETWORK} --service-account=${GCP_SERVICE_ACCOUNT} -- \
+	--env cloud --gcp_project_id ${GCP_PROJECT_ID} --app_name ${APP_NAME} --dataset_id ${DATASET_ID} --bq_write_method indirect --gcs_temp_bucket ${BUCKET_NAME}
 
 run-gcs:
 	@gcloud dataproc batches submit --project ${GCP_PROJECT_ID} --region ${GCP_REGION} pyspark gs://${BUCKET_NAME}/code/spark_gcs.py \
 	--py-files gs://${BUCKET_NAME}/code/${APP_NAME}-${VERSION}.zip --version 2.2 \
 	--properties spark.executor.instances=2,spark.driver.cores=4,spark.executor.cores=4,spark.app.name=${APP_NAME} \
-	--labels usecase=q3_spark_gcs_${DATASET_PATH} \
+	--labels usecase=p2804_q3_spark_gcs_${DATASET_PATH} --async \
 	--network ${GCP_NETWORK} --service-account=${GCP_SERVICE_ACCOUNT} -- \
 	--env cloud --app_name ${APP_NAME} --data_bucket gs://${BUCKET_NAME}/${DATASET_PATH}
 
@@ -63,6 +71,7 @@ run-bq-native:
 	@gcloud dataproc batches submit --project ${GCP_PROJECT_ID} --region ${GCP_REGION} pyspark gs://${BUCKET_NAME}/code/bq_native.py \
 	--py-files gs://${BUCKET_NAME}/code/${APP_NAME}-${VERSION}.zip --version 2.2 \
 	--properties spark.executor.instances=2,spark.driver.cores=4,spark.executor.cores=4,spark.app.name=${APP_NAME} \
+	--labels usecase=p2804_q3_spark_bq_native_${DATASET_ID} --async \
 	--network ${GCP_NETWORK} --service-account=${GCP_SERVICE_ACCOUNT} -- \
 	--gcp_project_id ${GCP_PROJECT_ID} --dataset_id ${DATASET_ID}
 

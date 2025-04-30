@@ -21,7 +21,7 @@ gcp-setup:
 	@echo "Setup GCP resources and data"
 	@gcloud auth application-default login
 	@gcloud storage buckets create gs://${BUCKET_NAME} --location=${GCP_REGION}
-	@gsutil -m cp -r gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB gs://${BUCKET_NAME}/tpcds/1GB
+	@gsutil -m cp -r gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB gs://${BUCKET_NAME}/${DATASET_PATH}
 	@bq mk -d --data_location=${GCP_REGION} ${DATASET_ID}
 	@bq load --source_format PARQUET ${DATASET_ID}.store_sales gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/store_sales/part*.snappy.parquet
 	@bq load --source_format PARQUET ${DATASET_ID}.date_dim gs://beam-tpcds/datasets/parquet/nonpartitioned/1GB/date_dim/part*.snappy.parquet
@@ -76,7 +76,9 @@ run-bq-native:
 	--gcp_project_id ${GCP_PROJECT_ID} --dataset_id ${DATASET_ID}
 
 gcp-clean:
-	@echo "Clean up GCP data"
+	@echo "Clean up data (cloud storage and bigquery)"
+	@gcloud storage rm --recursive gs://${BUCKET_NAME}/${DATASET_PATH}
+	@bq rm -r -f -d ${GCP_PROJECT_ID}:${DATASET_ID}
 
 
 
